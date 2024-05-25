@@ -179,7 +179,7 @@ function M.start_task(configs, start_line, end_line, opts)
         if binpath then
           try_node_modules_path = binpath
             .. util.path_separator
-            .. vim.fn.getenv("PATH")
+            .. vim.fn.getenv "PATH"
         else
           try_node_modules_path = false
         end
@@ -192,8 +192,15 @@ function M.start_task(configs, start_line, end_line, opts)
       end
     end
 
+    local jobstart = function(cmd, job_options)
+      return vim.fn.jobstart(
+        { vim.o.shell, vim.o.shellcmdflag, table.concat(cmd, " ") },
+        job_options
+      )
+    end
+
     if current.config.stdin then
-      local job_id = vim.fn.jobstart(cmd, job_options)
+      local job_id = jobstart(cmd, job_options)
       vim.fn.chansend(job_id, output)
       vim.fn.chanclose(job_id, "stdin")
     else
@@ -204,7 +211,7 @@ function M.start_task(configs, start_line, end_line, opts)
       if not current.config.no_append then
         table.insert(cmd, util.escape_path(tempfile_name))
       end
-      local job_id = vim.fn.jobstart(cmd, job_options)
+      local job_id = jobstart(cmd, job_options)
       tempfiles[job_id] = tempfile_name
     end
   end
